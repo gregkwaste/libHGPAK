@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace libPSARC.PSARC {
+namespace libHGPAK.HGPAK {
     using System.Collections.Generic;
     using System.IO;
     using Interop;
 
-    [ByteOrder( Endian.Big )]
-    [StructLayout( LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 0x01, Size = 0x1E )]
+    [ByteOrder( Endian.Little )]
+    [StructLayout( LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 0x01, Size = HGPAK_HEADER.TOC_ENTRY_SIZE )]
     public struct FileEntry {
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 0x10 )]
@@ -15,13 +15,11 @@ namespace libPSARC.PSARC {
         /* 0x00 [0x10] */ public byte[] nameDigest;
         private string _nameDigestToString() => Utils.BytesToHex( this.nameDigest );
 
-        /* 0x10 [0x04] */ public int blockIndex;
+        /// <summary>The uncompressed offset of the file.</summary>
+        /* 0x10 [0x08] */ public UInt64 uncompressedOffset;
 
         /// <summary>The size of the uncompressed file.</summary>
-        /* 0x14 [0x05] */ public UInt40 fileSize;
-
-        /// <summary>The offset of the file data within the archive.</summary>
-        /* 0x19 [0x05] */ public UInt40 dataOffset;
+        /* 0x18 [0x08] */ public UInt64 uncompressedFileSize;
 
         #region // Methods
 
@@ -47,11 +45,11 @@ namespace libPSARC.PSARC {
 
         public FileList() : this( 0 ) { }
 
-        public FileList( uint numFiles ) => entries = new FileEntry[numFiles];
+        public FileList( UInt64 numFiles ) => entries = new FileEntry[numFiles];
 
-        public FileList( Stream streamIn, uint numFiles ) : this( numFiles ) {
-            for ( int i = 0; i < numFiles; i++ ) {
-                entries[i] = Unmanaged.BlitStruct<PSARC.FileEntry>( streamIn );
+        public FileList( Stream streamIn, UInt64 numFiles ) : this( numFiles ) {
+            for ( ulong i = 0; i < numFiles; i++ ) {
+                entries[i] = Unmanaged.BlitStruct<FileEntry>( streamIn );
             }
         }
 

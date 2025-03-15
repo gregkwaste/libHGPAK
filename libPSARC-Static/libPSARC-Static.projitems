@@ -9,14 +9,13 @@
     <Import_RootNamespace>libPSARC</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Source\HGPAK\Archive.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\HGPAK\BlockSizeList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Interop\ByteOrder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Interop\StructLayoutInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Interop\Unmanaged.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Source\PSARC\Archive.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Source\PSARC\BlockSizeList.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Source\PSARC\FileEntry.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Source\PSARC\Header.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Source\PSARC\UInt40.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\HGPAK\FileEntry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\HGPAK\Header.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Version.cs" />
   </ItemGroup>

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace libPSARC {
+namespace libHGPAK {
 
     /// <summary>Version Utilities</summary>
     public static class Version {

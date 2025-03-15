@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace libPSARC.Interop {
+namespace libHGPAK.Interop {
 
     [AttributeUsage( AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum
                    | AttributeTargets.Field | AttributeTargets.Property, Inherited = true )]

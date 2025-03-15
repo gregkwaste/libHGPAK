@@ -8,10 +8,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using libPSARC;
-using libPSARC.Interop;
+using libHGPAK;
+using libHGPAK.Interop;
 
-using PSARC = libPSARC.PSARC;
+using HGPAK = libHGPAK.HGPAK;
 
 namespace cliPSARC {
 
@@ -23,7 +23,7 @@ namespace cliPSARC {
         internal static string baseDir = "";
         internal static string archiveFile = "";
 
-        internal static readonly string[] VERBS = new string[] { "list", "create", "extract" };
+        internal static readonly string[] VERBS = new string[] { "list", "create", "unpack", "extract" };
         internal static readonly Dictionary<string, string> OPTION_ALIASES = new Dictionary<string, string>() {
             { "h",  "help" },
             { "q",  "quiet" },
@@ -113,8 +113,8 @@ namespace cliPSARC {
         }
 
         internal static int ShowVersion() {
-            string version = libPSARC.Version.AssemblyVersion.ToString();
-            string versionString = $"{GetExecutableName()} v{libPSARC.Version.GetString()}";
+            string version = libHGPAK.Version.AssemblyVersion.ToString();
+            string versionString = $"{GetExecutableName()} v{libHGPAK.Version.GetString()}";
             Console.WriteLine( quiet ? version : versionString );
             return -1;
         }
@@ -124,7 +124,7 @@ namespace cliPSARC {
 
         internal static void ArchiveListFiles( string archiveFile ) {
             using ( var fIn = new FileStream( archiveFile, FileMode.Open, FileAccess.Read ) ) {
-                var archive = new PSARC.Archive( fIn );
+                var archive = new HGPAK.Archive( fIn );
 
                 int count = Math.Min( 5, archive.filePaths.Count );
                 for (int i = 0; i < count; i++) {
@@ -139,7 +139,7 @@ namespace cliPSARC {
 
         internal static void ArchiveExtractFiles( string archiveFile, string baseDir, List<string> files, bool ignoreErrors ) {
             using ( var fIn = new FileStream( archiveFile, FileMode.Open, FileAccess.Read ) ) {
-                var archive = new PSARC.Archive( fIn );
+                var archive = new HGPAK.Archive( fIn );
 
                 // if no files were specified then extract all
                 if ( files.Count == 0 ) foreach ( var path in archive.filePaths ) files.Add( path );
@@ -159,10 +159,15 @@ namespace cliPSARC {
             }
         }
 
-        internal static void ArchiveExtractFile( PSARC.Archive archive, Stream streamIn, string baseDir, string file ) {
+        internal static void ArchiveExtractFile( HGPAK.Archive archive, Stream streamIn, string baseDir, string file ) {
             CreateDirectory( baseDir, file );
             var filePath = Path.GetFullPath( Path.Combine( baseDir, file ) );
             bool exists = File.Exists( filePath );
+            if (exists && !overwrite ) {
+                //LogInfo( $"{file} exists. Skipping extraction..." );
+                return;
+            }
+
             FileMode fileMode = overwrite ? FileMode.Create : FileMode.CreateNew;
             using ( var fOut = new FileStream( filePath, fileMode, FileAccess.Write ) ) {
                 LogInfo( $"extracting {file}" );
@@ -186,6 +191,7 @@ namespace cliPSARC {
             path = path.Remove( path.Length - fileName.Length );
             Directory.CreateDirectory( Path.Combine( baseDir, path ) );
         }
+        
 
         internal static int Main( string[] args ) {
 #if DEBUG_LOG
@@ -206,6 +212,7 @@ namespace cliPSARC {
                 string arg = "<Archive> or <BaseDir>";                 // execution order matters!
                 arg = (options.verb != null     ) ? "<Archive>" : arg; // execution order matters!
                 arg = (options.verb == "create" ) ? "<BaseDir>" : arg; // execution order matters!
+                arg = (options.verb == "unpack" ) ? "<BaseDir>" : arg; // execution order matters!
                 return ShowError( ErrorCode.ArgumentRequired, arg );
             }
 
@@ -219,13 +226,12 @@ namespace cliPSARC {
                     archiveFile = options.fileParams[0];
 
                     if ( options.Count != 0 ) return ShowError( ErrorCode.InvalidArgument );
-
                     ArchiveListFiles( archiveFile );
 
                 } else if ( options.verb == "create" ) {
                     baseDir = options.fileParams[0];
 
-                    archiveFile = (options.fileParams.Count > 1) ? options.fileParams[1] : Path.GetFileNameWithoutExtension( baseDir );
+                    archiveFile = ( options.fileParams.Count > 1 ) ? options.fileParams[1] : Path.GetFileNameWithoutExtension( baseDir );
                     archiveFile = options.GetOption( "output" ) ?? archiveFile;
 
                     var listFile = options.GetOption( "input" );
@@ -244,20 +250,38 @@ namespace cliPSARC {
                 } else if ( options.verb == "extract" ) {
                     archiveFile = options.fileParams[0];
 
-                    baseDir = (options.fileParams.Count > 1) ? options.fileParams[1] : Directory.GetCurrentDirectory();
+                    baseDir = ( options.fileParams.Count > 1 ) ? options.fileParams[1] : Directory.GetCurrentDirectory();
                     baseDir = options.GetOption( "output" ) ?? baseDir;
 
                     var files = ReadFileList( options.GetOption( "input" ) );
                     files.AddRange( options.GetOptions( "file" ) );
+
+                    //Get Specific files
+                    //var files = new List<string> { "models/planets/biomes/common/buildings/monuments/animation/monument_open.anim.mbin" };
 
                     bool ignoreErrors = options.GetOption( "no-errors" ) != null;
 
                     if ( options.Count != 0 ) return ShowError( ErrorCode.InvalidArgument );
 
                     ArchiveExtractFiles( archiveFile, baseDir, files, ignoreErrors );
+                } else if ( options.verb == "unpack" ) {
+
+                    string folder = options.fileParams[0];
+
+                    bool input_folder_exists = Directory.Exists( options.fileParams[0] );
+                    if (!input_folder_exists) return ShowError( ErrorCode.DirectoryNotFound );
+
+                    baseDir = options.GetOption( "output" ) ?? folder;
+
+                    //Check all the files in the folder
+                    var inputfiles = Directory.GetFiles( folder , "*.pak");
+
+                    foreach (string pakfile in inputfiles ) {
+                        ArchiveExtractFiles( pakfile, folder, new List<string>() { }, false );
+                    }
                 }
 
-            } catch ( PSARC.InvalidArchiveException ) {
+            } catch ( HGPAK.InvalidArchiveException ) {
                 return ShowError( ErrorCode.InvalidArchive, archiveFile );
             } catch ( IOException e ) {
                 return ShowError( (int) ErrorCode.FileExists, e.Message );

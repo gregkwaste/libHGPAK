@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle( "PSARC Command Line Interface" )]
-[assembly: AssemblyDescription( "A command line tool for managing PSARC (PlayStation ARChive) files." )]
+[assembly: AssemblyTitle( "HGPAK Command Line Interface" )]
+[assembly: AssemblyDescription( "A command line tool for managing HGPAK (Hello Games PAK archive) files." )]
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "" )]
-[assembly: AssemblyProduct( "cliPSARC" )]
-[assembly: AssemblyCopyright( "Copyright © Fuzzy-Logik 2018" )]
+[assembly: AssemblyProduct( "cliHGPAK" )]
+[assembly: AssemblyCopyright( "Copyright ©gregkwaste 2025" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 
@@ -22,4 +22,4 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid( "1586fe0d-6a84-4065-a37f-b59e819edd0c" )]
 
-[assembly: AssemblyVersion( libPSARC.Version.VERSION_STRING )]
+[assembly: AssemblyVersion( libHGPAK.Version.VERSION_STRING )]

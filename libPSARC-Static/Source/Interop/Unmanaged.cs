@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace libPSARC.Interop {
+namespace libHGPAK.Interop {
 
     internal static class Unmanaged {
 
